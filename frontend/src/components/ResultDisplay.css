@@ -1,0 +1,170 @@
+.result-container {
+  width: 100%;
+  max-width: 700px;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.result-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.result-header h2 {
+  color: #22c55e;
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.filename {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.json-display {
+  background: #1e1e1e;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.json-header {
+  background: #2d2d2d;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #3d3d3d;
+}
+
+.json-header h3 {
+  color: #fff;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.json-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-copy {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-copy:hover {
+  background: #5568d3;
+}
+
+.json-viewer {
+  padding: 20px;
+  color: #d4d4d4;
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.json-object,
+.json-array {
+  margin: 2px 0;
+}
+
+.json-content {
+  margin-left: 20px;
+}
+
+.json-item {
+  margin: 2px 0;
+}
+
+.json-key {
+  color: #9cdcfe;
+}
+
+.json-string {
+  color: #ce9178;
+}
+
+.json-number {
+  color: #b5cea8;
+}
+
+.json-boolean {
+  color: #569cd6;
+}
+
+.json-null {
+  color: #569cd6;
+}
+
+.json-bracket {
+  color: #ffd700;
+  font-weight: bold;
+}
+
+.json-colon {
+  color: #d4d4d4;
+}
+
+.json-comma {
+  color: #d4d4d4;
+}
+
+.result-actions {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.info-box {
+  background: #e8f4fd;
+  border-left: 4px solid #3b82f6;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.info-box p {
+  color: #1e3a8a;
+  line-height: 1.6;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+  .result-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .json-viewer {
+    font-size: 0.85rem;
+    padding: 15px;
+  }
+
+  .json-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+}
