@@ -3,12 +3,47 @@ import './ResultDisplay.css'
 
 const ResultDisplay = ({ result, onReset }) => {
   const [copied, setCopied] = useState(false)
+  const [expandedKeys, setExpandedKeys] = useState(new Set())
+  const [showRawJson, setShowRawJson] = useState(false)
 
-  const handleCopy = () => {
-    const jsonString = JSON.stringify(result.extracted_data, null, 2)
-    navigator.clipboard.writeText(jsonString)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const handleCopy = async () => {
+    try {
+      const jsonString = JSON.stringify(result.extracted_data, null, 2)
+      await navigator.clipboard.writeText(jsonString)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2500)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+      alert('Failed to copy to clipboard')
+    }
+  }
+
+  const downloadJSON = () => {
+    try {
+      const jsonString = JSON.stringify(result.extracted_data, null, 2)
+      const blob = new Blob([jsonString], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${result.filename.replace(/\.[^/.]+$/, '')}_extracted.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Failed to download:', err)
+      alert('Failed to download JSON')
+    }
+  }
+
+  const toggleExpandKey = (key) => {
+    const newExpanded = new Set(expandedKeys)
+    if (newExpanded.has(key)) {
+      newExpanded.delete(key)
+    } else {
+      newExpanded.add(key)
+    }
+    setExpandedKeys(newExpanded)
   }
 
   const renderJSON = (data, level = 0) => {
@@ -68,21 +103,31 @@ const ResultDisplay = ({ result, onReset }) => {
 
       <div className="json-display">
         <div className="json-header">
-          <h3>Extracted Data</h3>
+          <h3>📊 Extracted Data</h3>
           <div className="json-actions">
-            <button onClick={handleCopy} className="btn-copy">
-              {copied ? '✓ Copied!' : '📋 Copy JSON'}
+            <button onClick={() => setShowRawJson(!showRawJson)} className="btn-toggle-view" title="Toggle between formatted and raw JSON">
+              {showRawJson ? '🎨 Formatted' : '📄 Raw JSON'}
+            </button>
+            <button onClick={handleCopy} className={`btn-copy ${copied ? 'copied' : ''}`}>
+              {copied ? '✅ Copied!' : '📋 Copy'}
+            </button>
+            <button onClick={downloadJSON} className="btn-download" title="Download as JSON file">
+              ⬇️ Download
             </button>
           </div>
         </div>
         <div className="json-viewer">
-          {renderJSON(result.extracted_data)}
+          {showRawJson ? (
+            <pre className="raw-json">{JSON.stringify(result.extracted_data, null, 2)}</pre>
+          ) : (
+            renderJSON(result.extracted_data)
+          )}
         </div>
       </div>
 
       <div className="result-actions">
         <button onClick={onReset} className="btn-primary">
-          Upload Another Image
+          ⬆️ Upload Another Image
         </button>
       </div>
 

@@ -6,6 +6,7 @@ const FileUpload = ({ onUploadSuccess, onUploadError, loading, setLoading }) => 
   const [preview, setPreview] = useState(null)
   const [selectedFile, setSelectedFile] = useState(null)
   const [dragActive, setDragActive] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const fileInputRef = useRef(null)
 
   const handleDrag = (e) => {
@@ -68,6 +69,7 @@ const FileUpload = ({ onUploadSuccess, onUploadError, loading, setLoading }) => 
     }
 
     setLoading(true)
+    setUploadProgress(0)
     const formData = new FormData()
     formData.append('file', selectedFile)
 
@@ -75,6 +77,10 @@ const FileUpload = ({ onUploadSuccess, onUploadError, loading, setLoading }) => 
       const response = await axios.post('/api/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          setUploadProgress(percentCompleted)
         },
       })
 
@@ -84,6 +90,7 @@ const FileUpload = ({ onUploadSuccess, onUploadError, loading, setLoading }) => 
       onUploadError(errorMessage)
     } finally {
       setLoading(false)
+      setUploadProgress(0)
     }
   }
 
@@ -134,6 +141,24 @@ const FileUpload = ({ onUploadSuccess, onUploadError, loading, setLoading }) => 
             <p className="filesize">{(selectedFile.size / 1024).toFixed(2)} KB</p>
           </div>
 
+          {loading && (
+            <div className="progress-container">
+              <div className="progress-label">
+                {uploadProgress < 100 ? (
+                  <>Uploading... {uploadProgress}%</>
+                ) : (
+                  <>Processing image...</>
+                )}
+              </div>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill" 
+                  style={{ width: `${uploadProgress}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
+
           <div className="button-group">
             <button 
               onClick={handleUpload} 
@@ -143,16 +168,17 @@ const FileUpload = ({ onUploadSuccess, onUploadError, loading, setLoading }) => 
               {loading ? (
                 <>
                   <span className="spinner"></span>
-                  Processing...
+                  {uploadProgress < 100 ? 'Uploading...' : 'Processing...'}
                 </>
               ) : (
-                'Extract Text'
+                '✨ Extract Text'
               )}
             </button>
             <button 
               onClick={() => {
                 setSelectedFile(null)
                 setPreview(null)
+                setUploadProgress(0)
               }} 
               className="btn-secondary"
               disabled={loading}

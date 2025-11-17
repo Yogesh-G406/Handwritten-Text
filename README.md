@@ -30,8 +30,9 @@ A full-stack web application for extracting text from handwritten images using A
 
 - Python 3.11+
 - Node.js 20+
-- [Ollama](https://ollama.com/) installed and running (`ollama serve`)
-- Vision model pulled locally (recommended: `ollama pull llava`)
+- **Groq API Key** (REQUIRED) - Get one free at https://console.groq.com/keys
+- [Ollama](https://ollama.com/) installed and running (optional, for local models)
+- Vision model pulled locally (optional, recommended: `ollama pull bakllava`)
 - Langfuse API Keys (optional, for observability)
 
 ## 🚀 Quick Start
@@ -46,18 +47,42 @@ ollama pull llava       # download the multimodal model used by this app
 
 Keep the Ollama service running while you use the app.
 
-### 2. Set Optional Environment Variables
+### 2. Set Environment Variables
 
-Create a `.env` file if you need to override defaults:
+**⚠️ IMPORTANT: Groq API Key is REQUIRED**
+
+Create a `.env` file in the `backend/` directory with your Groq API key:
+
+1. Get your Groq API key from: https://console.groq.com/keys
+2. Create `backend/.env` file with the following content:
 
 ```env
+# REQUIRED: Groq API Configuration
+GROQ_API_KEY=your_groq_api_key_here
+
+# Optional: Ollama Configuration (if using local models)
 OLLAMA_HOST=http://localhost:11434
-OLLAMA_MODEL=llava
-LANGFUSE_PUBLIC_KEY=pk-your-langfuse-public-key (optional)
-LANGFUSE_SECRET_KEY=sk-your-langfuse-secret-key (optional)
+OLLAMA_MODEL=bakllava:latest
+
+# Optional: Langfuse Configuration (for observability)
+LANGFUSE_PUBLIC_KEY=pk-your-langfuse-public-key
+LANGFUSE_SECRET_KEY=sk-your-langfuse-secret-key
 LANGFUSE_HOST=https://cloud.langfuse.com
-OLLAMA_TIMEOUT_SECONDS=60
+
+# Optional: HuggingFace Configuration
+HF_TOKEN=your_huggingface_token
+
+# Optional: Ollama Settings
+OLLAMA_TIMEOUT_SECONDS=120
+OLLAMA_TEMPERATURE=0.1
+OLLAMA_NUM_PREDICT=2048
+
+# Optional: Image Processing Settings
+ENABLE_IMAGE_PREPROCESSING=true
+USE_CONSENSUS_MODE=true
 ```
+
+**Note**: Replace `your_groq_api_key_here` with your actual Groq API key from https://console.groq.com/keys
 
 ### 2. Install Dependencies
 
@@ -221,6 +246,30 @@ server: {
 }
 ```
 
+### Accuracy Optimization Settings
+
+The following environment variables can be set to improve extraction accuracy:
+
+```env
+# Ollama Configuration
+OLLAMA_HOST=http://localhost:11434          # Ollama server URL
+OLLAMA_MODEL=llava                          # Vision model to use (llava, llava:34b, bakllava, etc.)
+OLLAMA_TIMEOUT_SECONDS=120                  # Request timeout (default: 120)
+OLLAMA_TEMPERATURE=0.1                       # Lower = more deterministic (default: 0.1)
+OLLAMA_NUM_PREDICT=2048                      # Max tokens in response (default: 2048)
+
+# Accuracy Features
+ENABLE_IMAGE_PREPROCESSING=true             # Enhance images before processing (default: true)
+USE_CONSENSUS_MODE=true                      # Run twice and merge for better accuracy (default: true)
+```
+
+**Accuracy Tips:**
+1. **Use a larger model**: `ollama pull llava:34b` for better accuracy (requires more VRAM)
+2. **Enable consensus mode**: Runs extraction twice and merges results (slower but more accurate)
+3. **Image preprocessing**: Automatically enhances contrast, sharpness, and resizes small images
+4. **Lower temperature**: Set `OLLAMA_TEMPERATURE=0.1` for more deterministic output
+5. **Higher resolution images**: Upload images at least 512px on the longest side for best results
+
 ## 🎯 Key Principles
 
 1. **No Hallucinations**: Only extracts visible information
@@ -231,9 +280,15 @@ server: {
 
 ## 🚨 Common Issues
 
+### "Groq API key not configured" error
+- **Solution**: Create a `backend/.env` file with your Groq API key
+- Get your API key from: https://console.groq.com/keys
+- Add this line to `backend/.env`: `GROQ_API_KEY=your_actual_api_key_here`
+- Restart the backend server after adding the key
+
 ### Agent not initialized
-- Verify the Ollama daemon is running (`ollama serve`)
-- Pull the configured model (default `ollama pull llava`)
+- Verify the Ollama daemon is running (`ollama serve`) if using local models
+- Pull the configured model (default `ollama pull bakllava`)
 - Restart the backend server after Ollama is ready
 
 ### CORS errors

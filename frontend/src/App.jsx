@@ -44,16 +44,16 @@ function App() {
           {error && (
             <div className="error-container">
               <div className="error-message">
-                <h2>❌ Error</h2>
+                <h2>⚠️ Oops! Something went wrong</h2>
                 <p>{error}</p>
                 <button onClick={handleReset} className="btn-primary">
-                  Try Again
+                  🔄 Try Again
                 </button>
               </div>
             </div>
           )}
 
-          {result && (
+          {result && !error && (
             <ResultDisplay 
               result={result}
               onReset={handleReset}

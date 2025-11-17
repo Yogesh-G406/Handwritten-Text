@@ -1,5 +1,6 @@
 import os
 import shutil
+import json
 from contextlib import asynccontextmanager
 from pathlib import Path
 from fastapi import FastAPI, File, UploadFile, HTTPException
@@ -8,7 +9,9 @@ from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from agent import HandwritingExtractionAgent
 
-load_dotenv()
+# Load .env file from the backend directory
+env_path = Path(__file__).parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
@@ -24,9 +27,9 @@ async def lifespan(app: FastAPI):
     global agent
     try:
         agent = HandwritingExtractionAgent()
-        print("✓ Handwriting Extraction Agent initialized")
+        print("[OK] Handwriting Extraction Agent initialized")
     except Exception as e:
-        print(f"⚠ Warning: Agent initialization failed: {e}")
+        print(f"[WARNING] Agent initialization failed: {e}")
         print("Please ensure Ollama is running and reachable (see README)")
     yield
     # Shutdown (if needed)
@@ -111,16 +114,31 @@ async def upload_file(file: UploadFile = File(...)):
         try:
             os.remove(file_path)
         except Exception as e:
-            print(f"⚠ Failed to delete temporary file: {e}")
+            print(f"[WARNING] Failed to delete temporary file: {e}")
         
         if result["success"]:
-            return JSONResponse(content=result)
+            formatted_result = {
+                "success": result["success"],
+                "filename": result["filename"],
+                "message": result["message"],
+                "extracted_data": result["extracted_data"]
+            }
+            return JSONResponse(
+                content=formatted_result,
+                media_type="application/json"
+            )
         else:
             raise HTTPException(status_code=500, detail=result.get("error", "Extraction failed"))
             
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        error_details = str(e)
+        error_type = type(e).__name__
+        print(f"[ERROR] Upload error: {error_type}: {error_details}")
+        print(f"[ERROR] Traceback: {traceback.format_exc()}")
+        
         if file_path and file_path.exists():
             try:
                 os.remove(file_path)
@@ -129,7 +147,7 @@ async def upload_file(file: UploadFile = File(...)):
         
         raise HTTPException(
             status_code=500,
-            detail=f"Error processing file: {str(e)}"
+            detail=f"Error processing file: {error_type}: {error_details}"
         )
 
 @app.delete("/cleanup")
